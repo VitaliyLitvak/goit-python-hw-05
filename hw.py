@@ -36,6 +36,7 @@ class Record:
     
     def __repr__(self):
         return str(self)
+       
         
 class Field:
     def __init__(self, value=None):
@@ -49,7 +50,7 @@ class Field:
 
 
 class Name(Field):
-    def __init__(self, value=None):
+    def __init__(self, value):
         self.name = value
         super().__init__(value=value)
 
@@ -71,9 +72,8 @@ class AddressBook(UserDict):
         key, value = str(record).split(":")
         self.data[key] = value
         
-
-
 address_book = AddressBook()   
+
 
 def user_input_split(user_input):
     matches = re.match(r'\w+\s+(\D+)\s([+]?\d{7,15})', user_input)
