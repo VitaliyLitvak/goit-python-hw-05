@@ -1,7 +1,9 @@
-from collections import UserDict
+from classes import Record, Field, Name, Phone, AddressBook
 import re
 
+
 STOP_LIST = ("good bye", "close", "exit")
+address_book = AddressBook()
 
 
 def input_error(func):
@@ -15,64 +17,6 @@ def input_error(func):
         except ValueError:
             return "Введені данні некоректні."
     return inner
-          
-
-class Record:
-    def __init__(self, name, phone=''):
-        self.name = str(name)
-        self.phone = str(phone)
-    
-    def add_phone(self, phone):
-        self.phone += str(f'{phone}')
-    
-    def delete_phone(self, phone):
-        self.phone = self.phone.replace(str(phone), '').rstrip()
-        
-    def edit_phone(self, old_phone, new_phone):
-        self.phone = self.phone.replace(str(old_phone), str(new_phone))
-
-    def __str__(self):
-        return f"{self.name}:{self.phone}"
-    
-    def __repr__(self):
-        return str(self)
-       
-        
-class Field:
-    def __init__(self, value=None):
-        self.value = value
-        
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return str(self.value)
-
-
-class Name(Field):
-    def __init__(self, value):
-        self.name = value
-        super().__init__(value=value)
-
-
-class Phone(Field):
-    def __init__(self, value=None):
-        super().__init__(value=value)
-        
-                  
-class AddressBook(UserDict):
-    def add_record(self, record):
-        key, value = str(record).split(":")
-        if key not in self.data.keys():
-            self.data[key] = value
-        elif value not in self.data[key]:
-            self.data[key] += f' {value}'
-            
-    def update_record(self, record):
-        key, value = str(record).split(":")
-        self.data[key] = value
-        
-address_book = AddressBook()   
 
 
 def user_input_split(user_input):
@@ -89,23 +33,29 @@ def handle_hello():
     return "How can I help you?"
 
 
-input_error    
+@input_error
 def handle_add(user_input):
-    name, phone = user_input_split(user_input)
-    record = Record(name, phone)
-    address_book.add_record(record)
-    return f"Контакт {name} був збережений з номером телефону {phone}.\n"
+    user_input = user_input.split(" ")
+    name = Name(user_input[1])
+    phones = Phone(user_input[2:])
+    record = Record(name, phones)
+    if str(name) not in address_book.data.keys():
+        address_book.add_record(record)
+    else:
+        record = Record(name, address_book.data[str(record.name)])
+        record.add_phone(phones)
+        address_book.add_record(record)
+    return f"Контакт {name} був збережений з номером телефону {phones}.\n"
 
 
 @input_error
 def handle_change(user_input):
     matches = re.match(r'\w+\s+(\D+)\s([+]?\d{7,15})\s([+]?\d{7,15})', user_input)
-    name, old_phone, new_phone = matches.group(1), matches.group(2), matches.group(3)
-    if name in address_book.data.keys():
-        record = Record(name, address_book.data[name])
-        record.edit_phone(old_phone, new_phone)
-        print(record)
-        address_book.update_record(record)
+    name, old_phone, new_phone = Name(matches.group(1)), Phone(matches.group(2)), Phone(matches.group(3))
+    if str(name) in address_book.data.keys():
+        record = Record(name, address_book.data[str(name)])
+        record.change_phone(old_phone, new_phone)
+        address_book.add_record(record)
         return f"Контакт {name} був змінений. Новий номер телефону {new_phone}.\n"
     else:
         raise KeyError
@@ -114,12 +64,13 @@ def handle_change(user_input):
 @input_error
 def handle_delete(user_input):
     name, phone = user_input_split(user_input)
-    name = str(name)
-    phone = str(phone)
-    if name in address_book.data.keys():
+    if str(name) in address_book.data.keys():
         record = Record(name, address_book[str(name)])
         record.delete_phone(phone)
-        address_book.update_record(record)  
+        if record.phone:
+            address_book.add_record(record)
+        else:
+            del address_book.data[str(name)]
         return f"Контакт {name} був змінений. Номер телефону {phone} видалений.\n"
     else:
         return f"У контакта {name} номер телефона {phone} не знайдений.\n"
