@@ -34,18 +34,18 @@ def handle_hello():
 
 
 @input_error
-def handle_add(user_input):
-    user_input = user_input.split(" ")
-    name = Name(user_input[1])
-    phones = Phone(user_input[2:])
-    record = Record(name, phones)
+def handle_add(*args):
+    args = args[0].split(' ')
+    name = Name(args[1])
+    record = Record(name)
+    for p in args[2:]:
+        phone = Phone(p)
+        record.add_phone(phone)
     if str(name) not in address_book.data.keys():
         address_book.add_record(record)
     else:
-        record = Record(name, address_book.data[str(record.name)])
-        record.add_phone(phones)
-        address_book.add_record(record)
-    return f"Контакт {name} був збережений з номером телефону {phones}.\n"
+        address_book.update_record(record)
+    return f"{name}: {address_book[str(name)]}\n"
 
 
 @input_error
@@ -53,7 +53,7 @@ def handle_change(user_input):
     matches = re.match(r'\w+\s+(\D+)\s([+]?\d{7,15})\s([+]?\d{7,15})', user_input)
     name, old_phone, new_phone = Name(matches.group(1)), Phone(matches.group(2)), Phone(matches.group(3))
     if str(name) in address_book.data.keys():
-        record = Record(name, address_book.data[str(name)])
+        record = address_book.data[str(name)]
         record.change_phone(old_phone, new_phone)
         address_book.add_record(record)
         return f"Контакт {name} був змінений. Новий номер телефону {new_phone}.\n"
@@ -65,9 +65,9 @@ def handle_change(user_input):
 def handle_delete(user_input):
     name, phone = user_input_split(user_input)
     if str(name) in address_book.data.keys():
-        record = Record(name, address_book[str(name)])
+        record = address_book[str(name)]
         record.delete_phone(phone)
-        if record.phone:
+        if record.phones:
             address_book.add_record(record)
         else:
             del address_book.data[str(name)]
@@ -76,7 +76,7 @@ def handle_delete(user_input):
         return f"У контакта {name} номер телефона {phone} не знайдений.\n"
 
     
-@input_error    
+@input_error   
 def handle_phone(user_input):
     name = re.match(r'\w+\s+(\D+)', user_input).group(1)
     if name in address_book.data.keys():
@@ -89,7 +89,7 @@ def handle_showall():
     if not address_book.data:
         return "Книга контактів порожня"
     else:
-        return address_book.data
+        return f"{address_book.data}\n"
 
 
 def commands(user_input):
