@@ -1,6 +1,29 @@
 from collections import UserDict
 
 
+class Field:
+    def __init__(self, value):
+        self.value = value
+        
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return str(self.value)
+
+
+class Name(Field):
+    def __init__(self, value):
+        self.name = value
+        super().__init__(value=value)
+
+
+class Phone(Field):
+    def __init__(self, value=''):
+        self.phone = value
+        super().__init__(value=value)
+
+
 class Record:
     def __init__(self, name, phones=None):
         self.name = name
@@ -22,31 +45,7 @@ class Record:
     
     def __repr__(self):
         return str(self)
-       
-        
-class Field:
-    def __init__(self, value=None):
-        self.value = value
-        
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return str(self.value)
-
-
-class Name(Field):
-    def __init__(self, value):
-        self.name = value
-        super().__init__(value=value)
-
-
-class Phone(Field):
-    def __init__(self, value=''):
-        self.phone = value
-        super().__init__(value=value)
-        
-        
+ 
                   
 class AddressBook(UserDict):
     def add_record(self, record):
