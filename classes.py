@@ -30,8 +30,9 @@ class Record:
         self.phones = phones if phones is not None else []
     
     def add_phone(self, phone):
-        self.phones.append(phone)
-                   
+        if not phone.value in [p.value for p in self.phones]
+            self.phones.append(phone)
+               
     def delete_phone(self, phone):
         self.phones = [p for p in self.phones if str(p) != str(phone)]
         
